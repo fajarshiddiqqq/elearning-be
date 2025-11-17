@@ -1,0 +1,7 @@
+flask-sqlalchemy
+flask-migrate
+pymysql
+flask-jwt-extended
+flask-bcrypt
+python-dotenv
+authlib
