@@ -1,9 +1,10 @@
-from flask import request, url_for, session
+from flask import request, url_for, session, redirect
 from flask_jwt_extended import create_access_token
 from app.routes.auth import auth_bp
 from app.services.utils import api_response
 from app.extensions import oauth, db
 from app.models import Users
+from app.config import Config
 
 @auth_bp.route("/test/google", methods=["GET"])
 def test_google_config():
@@ -135,13 +136,13 @@ def google_authorize():
             }
 
             if role == 'teacher':
-                meta_message = "Registration successful. Your account is pending approval."
+                meta_message = "Registration successful. Your account is pending approval. redirecting..."
                 return api_response(True, data=user_data, meta={"message": meta_message})
             
             access_token = create_access_token(identity=str(new_user.id))
             response_data = {"user": user_data, "access_token": access_token}
-            
-            return api_response(True, data=response_data, meta={"message": "Registration successful"})
+            redirect_uri = f"{Config.FRONTEND_URL}/oauth/callback?token={access_token}" 
+            return redirect(redirect_uri)
     
     except Exception as e:
         error_info = {"code": "OAUTH_ERROR", "message": f"OAuth authentication failed: {str(e)}"}

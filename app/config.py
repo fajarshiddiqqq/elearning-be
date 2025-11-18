@@ -21,3 +21,5 @@ class Config:
     GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
 
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
+
+    FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5173')

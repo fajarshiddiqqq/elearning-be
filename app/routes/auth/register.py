@@ -57,7 +57,10 @@ def register():
         "updated_at": new_user.updated_at.isoformat(),
     }
 
+    if not new_user.is_active:
+        message = "Registration successful. Your account is pending approval."
+        return api_response(True, data={"user": user_data}, meta={"message": message})
+    
     access_token = create_access_token(identity=str(new_user.id))
     response_data = {"user": user_data, "access_token": access_token}
-
     return api_response(True, data=response_data)

@@ -36,7 +36,7 @@ def login():
         return api_response(False, error=error_info, http_code=401)
     
     if not stored_user.is_active:
-        error_info = {"code": "INACTIVE_ACCOUNT", "message": "User account is inactive."}
+        error_info = {"code": "INACTIVE_ACCOUNT", "message": "User account is not yet approved or is inactive. For assistance, please contact support."}
         return api_response(False, error=error_info, http_code=403)
 
     user_data = {

@@ -18,3 +18,11 @@ class Users(db.Model):
     submissions = db.relationship('Submissions', backref='student', passive_deletes=True)
     teaching_roles = db.relationship('CourseTeachers', backref='teacher', passive_deletes=True)
     question_collabs = db.relationship('QuestionCollaborators', backref='user', passive_deletes=True)
+
+    def __init__(self, name, email, password_hash=None, role='student', is_active=True, google_id=None):
+        self.name = name
+        self.email = email
+        self.password_hash = password_hash
+        self.role = role
+        self.is_active = is_active
+        self.google_id = google_id
