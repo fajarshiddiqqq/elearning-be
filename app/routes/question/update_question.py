@@ -16,6 +16,46 @@ def user_can_edit(question, user_id):
         permission='editor'
     ).first() is not None
 
+@question_bp.route("/<int:question_id>", methods=["PATCH"])
+@jwt_required()
+@role_required("teacher")
+def update_question(current_user_id, question_id):
+    data = request.get_json()
+
+    question = Questions.query.get(question_id)
+    if not question:
+        return api_response(False, error={"code": "NOT_FOUND", "message": "Question not found."}, http_code=404)
+    
+    if not user_can_edit(question, current_user_id):
+        return api_response(False, error={"code": "FORBIDDEN", "message": "You do not have permission to update this question."}, http_code=403)
+
+    title = data.get("title")
+    description = data.get("description")
+    starter_code = data.get("starter_code")
+    difficulty = data.get("difficulty")
+    visibility = data.get("visibility")
+    tags = data.get("tags")
+    custom_instructions = data.get("custom_instructions")
+
+    if title:
+        question.title = title
+    if description:
+        question.description = description
+    if starter_code is not None:
+        question.starter_code = starter_code
+    if difficulty:
+        question.difficulty = difficulty
+    if visibility:
+        question.visibility = visibility
+    if tags is not None:
+        question.tags = tags
+    if custom_instructions is not None:
+        question.custom_instructions = custom_instructions
+
+    db.session.commit()
+
+    return api_response(True, meta={"message": "Question updated successfully."})
+
 @question_bp.route("/<int:question_id>/rubric", methods=["PUT"])
 @jwt_required()
 @role_required("teacher")
