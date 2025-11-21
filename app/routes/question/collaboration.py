@@ -38,8 +38,30 @@ def add_collaborator(current_user_id, question_id):
         return error
 
     data = request.get_json()
-    user_id = data.get("user_id")
+    email = data.get("email")
     permission = data.get("permission", "viewer")
+
+    if not email:
+        return api_response(
+            False,
+            error={"code": "MISSING_EMAIL", "message": "Email is required"},
+            http_code=400,
+        )
+    
+    user = Users.query.filter_by(email=email).first()
+    if not user:
+        return api_response(
+            False,
+            error={"code": "USER_NOT_FOUND", "message": "User with this email does not exist"},
+            http_code=404,
+        )
+
+    if user.role != "teacher":
+        return api_response(
+            False,
+            error={"code": "INVALID_USER_ROLE", "message": "Only teachers can be collaborators"},
+            http_code=400,
+        )
 
     if permission not in ["viewer", "editor"]:
         return api_response(
@@ -48,7 +70,7 @@ def add_collaborator(current_user_id, question_id):
             http_code=400,
         )
 
-    if user_id == question.created_by:  # type: ignore
+    if user.id == question.created_by:  # type: ignore
         return api_response(
             False,
             error={
@@ -59,7 +81,7 @@ def add_collaborator(current_user_id, question_id):
         )
 
     existing = QuestionCollaborators.query.filter_by(
-        question_id=question_id, user_id=user_id
+        question_id=question_id, user_id=user.id
     ).first()
     if existing:
         return api_response(
@@ -69,17 +91,16 @@ def add_collaborator(current_user_id, question_id):
         )
 
     new_collab = QuestionCollaborators(
-        question_id=question_id, user_id=user_id, permission=permission
+        question_id=question_id, user_id=user.id, permission=permission
     )
     db.session.add(new_collab)
     db.session.commit()
 
-    user = Users.query.get(user_id)
     return api_response(
         True,
         data={
             "collaborator": {
-                "id": user_id,
+                "id": user.id,
                 "name": user.name if user else None,
                 "permission": permission,
             }
@@ -201,7 +222,7 @@ def list_collaborators(question_id):
 
     collaborators = [
         {
-            "id": c.collaborators.id,
+            "id": c.user_id,
             "name": Users.query.get(c.user_id).name if Users.query.get(c.user_id) else None,  # type: ignore
             "permission": c.permission,
             "added_at": c.added_at,
