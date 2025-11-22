@@ -23,7 +23,9 @@ def get_private_questions():
         result.append({
             "id": q.id,
             "title": q.title,
+            "description": q.description,
             "difficulty": q.difficulty,
+            "language": "python",
             "tags": q.tags,
             "role": role,
             "updated_at": q.updated_at,
@@ -40,6 +42,8 @@ def get_public_questions():
         {
             "id": q.id,
             "title": q.title,
+            "description": q.description,
+            "language": "python",
             "difficulty": q.difficulty,
             "tags": q.tags,
             "created_by": q.created_by
@@ -90,6 +94,7 @@ def get_question_by_id(question_id):
         "description": question.description,
         "starter_code": question.starter_code,
         "difficulty": question.difficulty,
+        "language": "python",
         "tags": question.tags,
         "rubric": {"criteria": question.rubric.criteria, "tone": question.rubric.tone} if question.rubric else None,
         "visibility": question.visibility,
