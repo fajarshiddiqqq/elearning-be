@@ -56,17 +56,17 @@ def add_collaborator(current_user_id, question_id):
             http_code=404,
         )
 
-    if user.role != "teacher":
-        return api_response(
-            False,
-            error={"code": "INVALID_USER_ROLE", "message": "Only teachers can be collaborators"},
-            http_code=400,
-        )
-
     if permission not in ["viewer", "editor"]:
         return api_response(
             False,
             error={"code": "INVALID_PERMISSION", "message": "Invalid permission value"},
+            http_code=400,
+        )
+    
+    if permission == "editor" and user.role != "teacher":
+        return api_response(
+            False,
+            error={"code": "INVALID_USER_ROLE", "message": "Only teachers can be editors"},
             http_code=400,
         )
 
