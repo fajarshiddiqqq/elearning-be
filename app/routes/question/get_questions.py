@@ -92,6 +92,7 @@ def get_question_by_id(question_id):
         "difficulty": question.difficulty,
         "tags": question.tags,
         "rubric": {"criteria": question.rubric.criteria, "tone": question.rubric.tone} if question.rubric else None,
+        "visibility": question.visibility,
         "test_cases": test_cases_data,
         "role": role,
         "created_at": question.created_at,
