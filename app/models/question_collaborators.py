@@ -1,5 +1,5 @@
 from app.extensions import db
-
+from sqlalchemy import Enum
 
 class QuestionCollaborators(db.Model):
     __tablename__ = 'question_collaborators'
@@ -7,7 +7,7 @@ class QuestionCollaborators(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    permission = db.Column(db.Enum('viewer', 'editor'), nullable=False, default='viewer')
+    permission = db.Column(Enum('viewer', 'editor', name='permission_enum'), nullable=False, default='viewer')
     added_at = db.Column(db.DateTime, server_default=db.func.now())
 
     def __init__(self, question_id, user_id, permission='viewer'):

@@ -1,5 +1,6 @@
 from app.extensions import db
-
+from sqlalchemy import Enum
+from sqlalchemy.dialects.postgresql import JSONB
 
 class Questions(db.Model):
     __tablename__ = 'questions'
@@ -9,9 +10,9 @@ class Questions(db.Model):
     description = db.Column(db.Text, nullable=False)
     custom_instructions = db.Column(db.Text, nullable=True)
     starter_code = db.Column(db.Text)
-    difficulty = db.Column(db.Enum('easy', 'medium', 'hard'), nullable=False, default='medium')
-    tags = db.Column(db.JSON)
-    visibility = db.Column(db.Enum('public', 'private'), nullable=False, default='private')
+    difficulty = db.Column(Enum('easy', 'medium', 'hard', name='difficulty_enum'), nullable=False, default='medium')
+    tags = db.Column(JSONB)
+    visibility = db.Column(Enum('public', 'private', name='visibility_enum'), nullable=False, default='private')
     created_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())

@@ -1,5 +1,5 @@
 from app.extensions import db
-
+from sqlalchemy import Enum
 
 class Users(db.Model):
     __tablename__ = 'users'
@@ -8,7 +8,7 @@ class Users(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255))
-    role = db.Column(db.Enum('student', 'teacher', 'admin'), nullable=False, default='student')
+    role = db.Column(Enum('student', 'teacher', 'admin', name='role_enum'), nullable=False, default='student')
     is_active = db.Column(db.Boolean, default=True)
     google_id = db.Column(db.String(255), unique=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
