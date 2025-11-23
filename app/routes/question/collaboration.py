@@ -138,6 +138,21 @@ def update_collaborator_permission(current_user_id, question_id):
             error={"code": "INVALID_PERMISSION", "message": "Invalid permission value"},
             http_code=400,
         )
+    
+    user = Users.query.get(user_id)
+    if not user:
+        return api_response(
+            False,
+            error={"code": "USER_NOT_FOUND", "message": "User not found"},
+            http_code=404,
+        )
+    
+    if new_permission == "editor" and user.role != "teacher":
+        return api_response(
+            False,
+            error={"code": "INVALID_USER_ROLE", "message": "Only teachers can be editors"},
+            http_code=400,
+        )
 
     collab = QuestionCollaborators.query.filter_by(
         question_id=question_id, user_id=user_id

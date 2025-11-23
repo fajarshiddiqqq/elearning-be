@@ -96,13 +96,17 @@ def get_question_by_id(question_id):
         "difficulty": question.difficulty,
         "language": "python",
         "tags": question.tags,
-        "rubric": {"criteria": question.rubric.criteria, "tone": question.rubric.tone} if question.rubric else None,
-        "visibility": question.visibility,
         "test_cases": test_cases_data,
         "role": role,
         "created_at": question.created_at,
         "updated_at": question.updated_at,
     }
+
+    if not is_student:
+        question_data["custom_instructions"] = question.custom_instructions
+        question_data["rubric"] = {"criteria": question.rubric.criteria, "tone": question.rubric.tone} if question.rubric else None
+        question_data['visibility'] = question.visibility
+
 
     return api_response(True, data={"question": question_data})
 
@@ -121,30 +125,14 @@ def preview_question(question_id):
         ):
             return api_response(False, error={"code": "FORBIDDEN", "message": "Access forbidden"}, http_code=403)
     
-    test_cases_data = [
-        {
-            "id": tc.id,
-            "input_data": tc.input_data,
-            "expected_output": tc.expected_output,
-            # "is_hidden": tc.is_hidden
-        }
-        for tc in question.test_cases if not tc.is_hidden
-    ]
-    
     question_data = {
         "id": question.id,
         "title": question.title,
         "description": question.description,
-        "starter_code": question.starter_code,
         "difficulty": question.difficulty,
         "language": "python",
         "tags": question.tags,
-        "rubric": {"criteria": question.rubric.criteria, "tone": question.rubric.tone} if question.rubric else None,
-        "visibility": question.visibility,
-        "test_cases": test_cases_data,
-        "created_by": question.created_by,
         "created_at": question.created_at,
-        "updated_at": question.updated_at,
     }
 
     return api_response(True, data={"question": question_data})
