@@ -23,5 +23,5 @@ apis_bp.register_blueprint(auth_bp, url_prefix="/auth")
 from .question import question_bp
 apis_bp.register_blueprint(question_bp, url_prefix="/questions")
 
-# from .submission import submission_bp
-# apis_bp.register_blueprint(submission_bp, url_prefix="/submissions")
+from .submission import submission_bp
+apis_bp.register_blueprint(submission_bp, url_prefix="/submissions")

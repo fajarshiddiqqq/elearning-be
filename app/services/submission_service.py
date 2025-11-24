@@ -1,103 +1,88 @@
-# app/services/submission_service.py
-from app.models import Submissions, Feedbacks, TestCases, Rubrics
-from app.extensions import db
-from .ai_feedback import generate_feedback
-import subprocess, tempfile, os
+import time
 
-
-def safe_run_python(code: str, input_data: str) -> str:
-    """Execute student code safely with input and capture output"""
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as f:
-        f.write(code.encode())
-        temp_path = f.name
+def evaluate_python_code(code: str, test_cases: list, function_name: str):
+    sandbox_globals = {}
 
     try:
-        result = subprocess.run(
-            ["python3", temp_path],
-            input=input_data.encode(),
-            capture_output=True,
-            timeout=2
-        )
-        return result.stdout.decode().strip()
-    except subprocess.TimeoutExpired:
-        return "__TIMEOUT__"
+        exec(code, sandbox_globals)
     except Exception as e:
-        return f"__ERROR__: {str(e)}"
-    finally:
-        os.remove(temp_path)
+        return {
+            "status": "error",
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "results": [],
+            "total_tests": 0,
+            "passed": 0,
+            "failed": 0,
+            "execution_time_ms": 0
+        }
 
+    func = sandbox_globals.get(function_name)
+    if not callable(func):
+        return {
+            "status": "error",
+            "error_type": "FunctionNotFound",
+            "error_message": f"Function '{function_name}' not found.",
+            "results": [],
+            "total_tests": 0,
+            "passed": 0,
+            "failed": 0,
+            "execution_time_ms": 0
+        }
 
-def run_submission(student_id: int, question_id: int, code: str, generate_ai: bool = True) -> Submissions:
-    """Run student's submission, execute test cases, and optionally generate AI feedback."""
-    # 1. Get rubric and question
-    rubric = Rubrics.query.filter_by(question_id=question_id).first()
-    if not rubric:
-        raise ValueError("Rubric not found for this question")
+    results = []
+    passed_count = 0
+    failed_count = 0
 
-    question = rubric.question
-    test_cases = question.test_cases
-    if not test_cases:
-        raise ValueError("No test cases found for this question")
+    start = time.time()
 
-    # 2. Determine attempt number
-    last_attempt = Submissions.query.filter_by(student_id=student_id, question_id=question_id)\
-                    .order_by(Submissions.attempt_no.desc()).first()
-    attempt_no = last_attempt.attempt_no + 1 if last_attempt else 1
+    for idx, (args, expected) in enumerate(test_cases, start=1):
+        # normalize args: always a tuple
+        if isinstance(args, (list, tuple)):
+            call_args = tuple(args)
+        else:
+            call_args = (args,)
 
-    # 3. Create submission
-    submission = Submissions(
-        question_id=question_id,
-        student_id=student_id,
-        code=code,
-        status="pending",
-        attempt_no=attempt_no
-    )
-    db.session.add(submission)
-    db.session.flush()  # Get submission.id
+        try:
+            output = func(*call_args)
+        except Exception as e:
+            failed_count += 1
+            results.append({
+                "case": idx,
+                "status": "error",
+                "input": list(call_args),
+                "expected": expected,
+                "error_type": type(e).__name__,
+                "error_message": str(e)
+            })
+            continue
 
-    # 4. Run test cases
-    test_results = []
-    error_occurred = False
+        if output == expected:
+            passed_count += 1
+            results.append({
+                "case": idx,
+                "status": "passed",
+                "input": list(call_args),
+                "expected": expected,
+                "got": output
+            })
+        else:
+            failed_count += 1
+            results.append({
+                "case": idx,
+                "status": "failed",
+                "input": list(call_args),
+                "expected": expected,
+                "got": output
+            })
 
-    for tc in test_cases:
-        output = safe_run_python(code, tc.input_data)
+    end = time.time()
 
-        if output.startswith("__ERROR__") or output == "__TIMEOUT__":
-            submission.status = "error"
-            submission.error_message = output
-            error_occurred = True
-            break
-
-        passed = output == tc.expected_output
-        test_results.append({
-            "test_case_id": tc.id,
-            "input": tc.input_data,
-            "expected": tc.expected_output,
-            "output": output,
-            "passed": passed
-        })
-
-    # 5. If no runtime error, set pass/fail
-    if not error_occurred:
-        submission.status = "passed" if all(r["passed"] for r in test_results) else "failed"
-
-    # 6. Generate AI feedback (optional, can be async later)
-    if generate_ai:
-        ai_text = generate_feedback(
-            code=code,
-            rubric_criteria=rubric.criteria,
-            tone=rubric.tone,
-            test_results=test_results
-        )
-        feedback = Feedbacks(
-            submission_id=submission.id,
-            ai_feedback={"text": ai_text},
-            teacher_feedback=None,
-            final_score=None
-        )
-        db.session.add(feedback)
-
-    # 7. Commit all
-    db.session.commit()
-
-    return submission
+    return {
+        "status": "passed" if failed_count == 0 else "failed",
+        "total_tests": len(test_cases),
+        "passed": passed_count,
+        "failed": failed_count,
+        "execution_time_ms": round((end - start) * 1000, 3),
+        "results": results
+    }

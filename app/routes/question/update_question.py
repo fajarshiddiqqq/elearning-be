@@ -31,6 +31,7 @@ def update_question(current_user_id, question_id):
 
     title = data.get("title")
     description = data.get("description")
+    function_name = data.get("function_name")
     starter_code = data.get("starter_code")
     difficulty = data.get("difficulty")
     visibility = data.get("visibility")
@@ -41,6 +42,8 @@ def update_question(current_user_id, question_id):
         question.title = title
     if description:
         question.description = description
+    if function_name:
+        question.function_name = function_name
     if starter_code is not None:
         question.starter_code = starter_code
     if difficulty:

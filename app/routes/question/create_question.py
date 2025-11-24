@@ -16,8 +16,9 @@ def create_question(current_user_id):
     # main question fields
     title = data.get('title')
     description = data.get('description')
-    if not title or not description:
-        return api_response(False, error={"code": "INVALID_DATA", "message": "Title and description are required"}, http_code=400)
+    function_name = data.get('function_name')
+    if not title or not description or not function_name:
+        return api_response(False, error={"code": "INVALID_DATA", "message": "Title, description, and function name are required"}, http_code=400)
 
     # optional
     custom_instructions = data.get('custom_instructions')
@@ -49,6 +50,7 @@ def create_question(current_user_id):
     new_question = Questions(
         title=title,
         description=description,
+        function_name=function_name,
         custom_instructions=custom_instructions,
         starter_code=starter_code,
         difficulty=difficulty,

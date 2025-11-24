@@ -8,6 +8,7 @@ class Questions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    function_name = db.Column(db.String(255), nullable=False)
     custom_instructions = db.Column(db.Text, nullable=True)
     starter_code = db.Column(db.Text)
     difficulty = db.Column(Enum('easy', 'medium', 'hard', name='difficulty_enum'), nullable=False, default='medium')
@@ -24,9 +25,10 @@ class Questions(db.Model):
     collaborators = db.relationship('QuestionCollaborators', backref='question', cascade='all, delete-orphan', passive_deletes=True)
     courses = db.relationship('CourseQuestions', backref='question', cascade='all, delete-orphan', passive_deletes=True)
 
-    def __init__(self, title, description, custom_instructions=None, starter_code=None, difficulty='medium', tags=None, visibility='private', created_by=None):
+    def __init__(self, title, description, function_name, custom_instructions=None, starter_code=None, difficulty='medium', tags=None, visibility='private', created_by=None):
         self.title = title
         self.description = description
+        self.function_name = function_name
         self.custom_instructions = custom_instructions
         self.starter_code = starter_code
         self.difficulty = difficulty
