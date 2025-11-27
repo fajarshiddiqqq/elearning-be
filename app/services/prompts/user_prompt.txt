@@ -1,0 +1,15 @@
+Here is the student code:
+<CODE>
+{{CODE}}
+</CODE>
+
+The test results are as follows:
+{{TEST_RESULTS}}
+
+Here is the test result score:
+{{TEST_SCORE}} / 100 (This is the score based on test case pass/fail)
+
+Here is the grading rubric:
+<RUBRIC>
+{{RUBRIC_JSON}}
+</RUBRIC>

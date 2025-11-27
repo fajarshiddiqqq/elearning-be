@@ -14,8 +14,8 @@ class Submissions(db.Model):
     attempt_no = db.Column(db.Integer, nullable=False, default=1)
     submitted_at = db.Column(db.DateTime, server_default=db.func.now())
 
-    feedback = db.relationship('Feedbacks', backref='submission', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
-
+    feedback = db.relationship('Feedbacks', backref='submission', uselist=False, cascade='all, delete', passive_deletes=True)
+    
     def __init__(self, question_id, student_id, code, status='pending', error_message=None, score=None, attempt_no=1):
         self.question_id = question_id
         self.student_id = student_id

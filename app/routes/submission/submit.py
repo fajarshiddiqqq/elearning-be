@@ -60,7 +60,7 @@ def submit_code():
     last_submission = (
         Submissions.query
         .filter_by(question_id=question_id, student_id=user_id)
-        .order_by(Submissions.attempt_no.desc())
+        .order_by(Submissions.attempt_no.desc()) # type: ignore
         .first()
     )
 
@@ -89,7 +89,9 @@ def submit_code():
     # Update submission with results
     submission.status = result["status"]
     submission.error_message = result.get("error_message")
-    submission.score = result.get("score")  # typically you compute this later
+    submission.score = result.get("score")
+
+    result["submission_id"] = submission.id
 
     db.session.commit()
 

@@ -9,3 +9,8 @@ class Feedbacks(db.Model):
     ai_feedback = db.Column(JSONB, nullable=False)
     teacher_feedback = db.Column(db.Text)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def __init__(self, submission_id, ai_feedback, teacher_feedback=None):
+        self.submission_id = submission_id
+        self.ai_feedback = ai_feedback
+        self.teacher_feedback = teacher_feedback

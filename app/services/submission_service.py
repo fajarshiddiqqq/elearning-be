@@ -78,11 +78,16 @@ def evaluate_python_code(code: str, test_cases: list, function_name: str):
 
     end = time.time()
 
+    total = len(test_cases)
+    score_fraction = passed_count / total if total > 0 else 0
+    score = round(score_fraction * 100, 2)
+
     return {
         "status": "passed" if failed_count == 0 else "failed",
         "total_tests": len(test_cases),
         "passed": passed_count,
         "failed": failed_count,
         "execution_time_ms": round((end - start) * 1000, 3),
-        "results": results
+        "results": results,
+        "score": score
     }
